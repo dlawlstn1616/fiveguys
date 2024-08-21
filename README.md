@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-"# fiveguys" 
-나는욱진 ㅋ 이걸수정해버리기
-=======
 ## fiveguys
 
 #### 당근마켓 - (x)
@@ -26,4 +22,4 @@
 * BackEnd
     - Intellij
     - Spring
->>>>>>> 0fb8576 (README update)
+
