@@ -1,4 +1,4 @@
-## fiveguys - jiin
+## fiveguys
 
 ### 가계부
 * 영수증
