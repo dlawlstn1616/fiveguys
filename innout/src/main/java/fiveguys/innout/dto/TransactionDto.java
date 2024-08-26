@@ -7,7 +7,7 @@ import java.util.Date;
 @Getter
 @Setter
 
-public class TransactionDTO {
+public class TransactionDto {
     private Long id;
     private Date date;
     private Integer amount;

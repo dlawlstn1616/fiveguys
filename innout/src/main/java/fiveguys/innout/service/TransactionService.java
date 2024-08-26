@@ -1,6 +1,6 @@
 package fiveguys.innout.service;
 
-import fiveguys.innout.dto.TransactionDTO;
+import fiveguys.innout.dto.TransactionDto;
 import fiveguys.innout.entity.Category;
 import fiveguys.innout.entity.Transaction;
 import fiveguys.innout.entity.User;
@@ -25,7 +25,7 @@ public class TransactionService {
     @Autowired
     private UserRepository userRepository;
 
-    public Transaction createTransaction(TransactionDTO transactionDTO) {
+    public Transaction createTransaction(TransactionDto transactionDTO) {
         Transaction transaction = new Transaction();
         transaction.setDate(transactionDTO.getDate());
         transaction.setAmount(transactionDTO.getAmount());
@@ -41,7 +41,7 @@ public class TransactionService {
         return transactionRepository.save(transaction);
     }
 
-    public Transaction updateTransaction(Long id, TransactionDTO transactionDTO) {
+    public Transaction updateTransaction(Long id, TransactionDto transactionDTO) {
         Optional<Transaction> transactionOpt = transactionRepository.findById(id);
 
         if (transactionOpt.isPresent()) {

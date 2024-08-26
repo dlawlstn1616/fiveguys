@@ -1,6 +1,6 @@
 package fiveguys.innout.controller;
 
-import fiveguys.innout.dto.TransactionDTO;
+import fiveguys.innout.dto.TransactionDto;
 import fiveguys.innout.entity.Transaction;
 import fiveguys.innout.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +16,12 @@ public class TransactionController {
     private TransactionService transactionService;
 
     @PostMapping("/add")
-    public Transaction createTransaction(@RequestBody TransactionDTO transactionDTO) {
+    public Transaction createTransaction(@RequestBody TransactionDto transactionDTO) {
         return transactionService.createTransaction(transactionDTO);
     }
 
     @PatchMapping("/{id}")
-    public Transaction updateTransaction(@PathVariable Long id, @RequestBody TransactionDTO transactionDTO) {
+    public Transaction updateTransaction(@PathVariable Long id, @RequestBody TransactionDto transactionDTO) {
         return transactionService.updateTransaction(id, transactionDTO);
     }
 
