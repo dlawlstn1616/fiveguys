@@ -4,12 +4,13 @@ import fiveguys.innout.dto.joinDto;
 import fiveguys.innout.dto.loginDto;
 import fiveguys.innout.entity.User;
 import fiveguys.innout.repository.UserRepository;
-//import fiveguys.innout.security.JwtTokenUtil;
+import fiveguys.innout.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,11 +21,8 @@ public class UserController {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-    private AuthenticationManagerBuilder authenticationManagerBuilder;
-
-
-//    @Autowired
-//    private JwtTokenUtil jwtTokenUtil;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil; // JWT 유틸리티 추가
 
     @PostMapping("/join")
     public String join(@RequestBody joinDto joinDto) {
@@ -38,14 +36,20 @@ public class UserController {
         User user = new User();
         user.setEmail(joinDto.getEmail());
         user.setName(joinDto.getUsername());
-//        user.setPassword(joinDto.getPassword());
         user.setPassword(passwordEncoder.encode(joinDto.getPassword()));
         userRepository.save(user);
 
         return "User created successfully";
     }
 
-   
+    @PostMapping("/login")
+    public String login(@RequestBody loginDto loginDto) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword()));
 
-//
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        return jwtUtil.generateToken(userDetails);
+    }
 }
