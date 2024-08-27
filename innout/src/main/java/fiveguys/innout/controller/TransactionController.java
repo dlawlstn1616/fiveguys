@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/innout")
@@ -41,5 +42,11 @@ public class TransactionController {
     @GetMapping("/{id}")
     public Transaction getTransactionById(@PathVariable Long id) {
         return transactionService.getTransactionById(id);
+    }
+
+    @Operation(summary = "연령대 및 성별별 소비 데이터", description = "카테고리별 연령대 및 성별별 소비 데이터를 반환합니다.")
+    @GetMapping("/consume")
+    public Map<String, Map<String, Integer>> getSpendingByCategoryAndAgeGroup() {
+        return transactionService.getSpendingByCategoryAndAgeGroup();
     }
 }

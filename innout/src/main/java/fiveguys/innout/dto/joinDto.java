@@ -14,6 +14,7 @@ public class joinDto {
     private String password;
     private String passwordConfirm;
     private Date birthDate;  // 생년월일 필드 추가
+    private String gender;
 
     public boolean checkPassword() {
         return this.password != null && this.password.equals(this.passwordConfirm);
