@@ -9,9 +9,12 @@ import fiveguys.innout.repository.TransactionRepository;
 import fiveguys.innout.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TransactionService {
@@ -25,16 +28,36 @@ public class TransactionService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private AgeGroupService ageGroupService;
+
+//    public Transaction createTransaction(TransactionDTO transactionDTO) {
+//        Transaction transaction = new Transaction();
+//        transaction.setDate(transactionDTO.getDate());
+//        transaction.setAmount(transactionDTO.getAmount());
+//
+//        Optional<Category> category = categoryRepository.findById(transactionDTO.getCategoryId());
+//        Optional<User> user = userRepository.findById(transactionDTO.getUserId());
+//
+//        category.ifPresent(transaction::setCategory);
+//        user.ifPresent(transaction::setUser);
+//
+//        transaction.setDescription(transactionDTO.getDescription());
+//
+//        return transactionRepository.save(transaction);
+//    }
     public Transaction createTransaction(TransactionDTO transactionDTO) {
         Transaction transaction = new Transaction();
         transaction.setDate(transactionDTO.getDate());
         transaction.setAmount(transactionDTO.getAmount());
 
-        Optional<Category> category = categoryRepository.findById(transactionDTO.getCategoryId());
-        Optional<User> user = userRepository.findById(transactionDTO.getUserId());
+        Category category = categoryRepository.findById(transactionDTO.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        User user = userRepository.findById(transactionDTO.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        category.ifPresent(transaction::setCategory);
-        user.ifPresent(transaction::setUser);
+        transaction.setCategory(category);
+        transaction.setUser(user);
 
         transaction.setDescription(transactionDTO.getDescription());
 
@@ -74,5 +97,30 @@ public class TransactionService {
     public Transaction getTransactionById(Long id) {
         return transactionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
+    }
+
+    // 클래스 안에 Logger 추가
+    private static final Logger logger = LoggerFactory.getLogger(TransactionService.class);
+
+    public Map<String, Map<String, Integer>> getSpendingByCategoryAndAgeGroup() {
+        List<Transaction> transactions = transactionRepository.findAll();
+        logger.info("Total transactions fetched: " + transactions.size());
+
+        return transactions.stream().collect(Collectors.groupingBy(
+                t -> {
+                    String categoryName = t.getCategory().getName();
+                    logger.info("Processing category: " + categoryName);
+                    return categoryName;
+                },
+                Collectors.groupingBy(
+                        t -> {
+                            String ageGroup = ageGroupService.calculateAgeGroup(t.getUser().getId());
+                            String gender = t.getUser().getGender();
+                            logger.info("Processing user: " + t.getUser().getId() + ", Age group: " + ageGroup + ", Gender: " + gender);
+                            return ageGroup + "-" + gender;
+                        },
+                        Collectors.summingInt(Transaction::getAmount)
+                )
+        ));
     }
 }
