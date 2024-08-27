@@ -37,7 +37,9 @@ public class UserController {
         user.setEmail(joinDto.getEmail());
         user.setName(joinDto.getUsername());
         user.setPassword(passwordEncoder.encode(joinDto.getPassword()));
-        user.setBirthDate(joinDto.getBirthDate());  // 생년월일 설정
+        user.setBirthDate(joinDto.getBirthDate());
+        user.setGender(joinDto.getGender());
+// 생년월일 설정
         userRepository.save(user);
 
         return "User created successfully";

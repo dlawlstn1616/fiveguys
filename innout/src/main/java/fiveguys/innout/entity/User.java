@@ -23,6 +23,6 @@ public class User {
 
     @Temporal(TemporalType.DATE)  // 날짜만 저장하는 경우 사용
     private Date birthDate;
-    // Getters and Setters
 
+    private String gender; // 성별 필드 추가
 }
