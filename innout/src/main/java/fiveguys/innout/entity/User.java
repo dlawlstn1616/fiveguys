@@ -25,4 +25,5 @@ public class User {
     private Date birthDate;
 
     private String gender; // 성별 필드 추가
+
 }
