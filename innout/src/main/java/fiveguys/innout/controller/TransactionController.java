@@ -48,9 +48,9 @@ public class TransactionController {
     public Map<String, Map<String, Integer>> getSpendingByCategoryAndAgeGroup() {
         return transactionService.getSpendingByCategoryAndAgeGroup();
     }
-    @Operation(summary = "이메일로 거래 내역 조회", description = "특정 이메일을 기반으로 모든 거래 내역을 조회합니다.")
+    @Operation(summary = "유저 아이디로 거래 내역 조회", description = "특정 유저 아이디를 기반으로 모든 거래 내역을 조회합니다.")
     @GetMapping("/transaction")
-    public List<Transaction> getTransactionsByEmail(@RequestParam String email) {
-        return transactionService.getTransactionsByEmail(email);
+    public List<Transaction> getTransactionsByEmail(@RequestParam Long userid) {
+        return transactionService.getTransactionByUserId(userid);
     }
 }
