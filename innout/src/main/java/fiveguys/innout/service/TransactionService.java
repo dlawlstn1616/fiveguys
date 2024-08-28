@@ -123,4 +123,9 @@ public class TransactionService {
                 )
         ));
     }
+    public List<Transaction> getTransactionsByEmail(String email) {
+        // 이메일을 기반으로 거래 내역 검색
+        return transactionRepository.findByUserEmail(email);
+    }
+
 }

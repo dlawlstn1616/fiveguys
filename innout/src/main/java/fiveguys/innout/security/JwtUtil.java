@@ -45,7 +45,6 @@ public class JwtUtil {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("username", userDetails.getUsername()); // username을 클레임에 추가
         return createToken(claims, userDetails.getUsername());
     }
 
@@ -53,7 +52,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
-                .setIssuer("demo app") // 발급자
+                .setIssuer("demo") // 발급자
                 .setIssuedAt(new Date()) // 발급일
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 만료일 (10시간 후)
                 .signWith(key) // 지정된 키로 서명

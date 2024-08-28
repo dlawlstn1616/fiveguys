@@ -21,7 +21,6 @@ public class TransactionController {
     @PostMapping("/add")
     public Transaction createTransaction(@RequestBody TransactionDTO transactionDTO) {
         return transactionService.createTransaction(transactionDTO);
-
     }
     @Operation(summary = "내역 수정", description = "주어진 ID를 사용하여 기존 내역을 수정합니다.")
     @PatchMapping("/{id}")
@@ -48,5 +47,10 @@ public class TransactionController {
     @GetMapping("/consume")
     public Map<String, Map<String, Integer>> getSpendingByCategoryAndAgeGroup() {
         return transactionService.getSpendingByCategoryAndAgeGroup();
+    }
+    @Operation(summary = "이메일로 거래 내역 조회", description = "특정 이메일을 기반으로 모든 거래 내역을 조회합니다.")
+    @GetMapping("/transaction")
+    public List<Transaction> getTransactionsByEmail(@RequestParam String email) {
+        return transactionService.getTransactionsByEmail(email);
     }
 }
