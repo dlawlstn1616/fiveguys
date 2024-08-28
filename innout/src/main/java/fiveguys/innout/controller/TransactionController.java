@@ -60,7 +60,7 @@ public class TransactionController {
         return transactionService.getTransactionById(id);
     }
 
-    @Operation(summary = "유저 아이디로 거래 내역 조회", description = "특정 유저 아이디를 기반으로 모든 거래 내역을 조회합니다.")
+    @Operation(summary = "유저 아이디로 거래 내역 조회", description = "특정 유저 아이디를 기반으로 모든 거래 내역을 조회합니다..")
     @GetMapping("/transaction/{userid}")
     public List<Transaction> getTransactionsByUserId(@PathVariable Long userid) {
         return transactionService.getTransactionByUserId(userid);
