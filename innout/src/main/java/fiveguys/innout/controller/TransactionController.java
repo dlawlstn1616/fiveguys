@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +18,21 @@ public class TransactionController {
 
     @Autowired
     private TransactionService transactionService;
+
+    @GetMapping("/consume")
+    public List<Map<String, Object>> getTopSpend() {
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        transactionService.getTopSpend().forEach((category, entry) -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("category", category);
+            map.put("group", entry.getKey());
+            map.put("amount", entry.getValue());
+            result.add(map);
+        });
+
+        return result;
+    }
 
     @Operation(summary = "내역 생성", description = "새로운 내역을 생성합니다.")
     @PostMapping("/add")
@@ -44,9 +61,5 @@ public class TransactionController {
         return transactionService.getTransactionById(id);
     }
 
-    @Operation(summary = "연령대 및 성별별 소비 데이터", description = "카테고리별 연령대 및 성별별 소비 데이터를 반환합니다.")
-    @GetMapping("/consume")
-    public Map<String, Map<String, Integer>> getSpendingByCategoryAndAgeGroup() {
-        return transactionService.getSpendingByCategoryAndAgeGroup();
-    }
+
 }
