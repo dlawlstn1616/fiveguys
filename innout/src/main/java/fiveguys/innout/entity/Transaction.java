@@ -28,6 +28,4 @@ public class Transaction {
     private User user;
 
     private String description;
-
-    // Getters and Setters
 }

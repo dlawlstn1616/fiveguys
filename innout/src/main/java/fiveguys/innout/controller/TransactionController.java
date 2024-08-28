@@ -38,7 +38,6 @@ public class TransactionController {
     @PostMapping("/add")
     public Transaction createTransaction(@RequestBody TransactionDTO transactionDTO) {
         return transactionService.createTransaction(transactionDTO);
-
     }
     @Operation(summary = "내역 수정", description = "주어진 ID를 사용하여 기존 내역을 수정합니다.")
     @PatchMapping("/{id}")
@@ -61,5 +60,10 @@ public class TransactionController {
         return transactionService.getTransactionById(id);
     }
 
+    @Operation(summary = "유저 아이디로 거래 내역 조회", description = "특정 유저 아이디를 기반으로 모든 거래 내역을 조회합니다.")
+    @GetMapping("/transaction/{userid}")
+    public List<Transaction> getTransactionsByUserId(@PathVariable Long userid) {
+        return transactionService.getTransactionByUserId(userid);
+    }
 
 }
