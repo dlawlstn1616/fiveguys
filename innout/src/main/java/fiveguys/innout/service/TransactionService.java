@@ -129,7 +129,6 @@ public class TransactionService {
     }
 
     public List<Transaction> getTransactionByUserId(Long userid) {
-        return transactionRepository.findByUserId(userid)
-                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+        return transactionRepository.findByUserId(userid);
     }
 }
