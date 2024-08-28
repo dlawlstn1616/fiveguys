@@ -21,7 +21,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("User not found with email: " + email);
         }
         return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail())
+                .username(String.valueOf(user.getId()))
                 .password(user.getPassword())
                 .roles("USER") // 예를 들어 기본 역할로 "USER"를 설정
                 .build();

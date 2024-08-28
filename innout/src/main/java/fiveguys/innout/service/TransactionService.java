@@ -11,9 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -102,25 +101,24 @@ public class TransactionService {
     // 클래스 안에 Logger 추가
     private static final Logger logger = LoggerFactory.getLogger(TransactionService.class);
 
-    public Map<String, Map<String, Integer>> getSpendingByCategoryAndAgeGroup() {
+    public Map<String, Map.Entry<String, Integer>> getTopSpend() {
         List<Transaction> transactions = transactionRepository.findAll();
         logger.info("Total transactions fetched: " + transactions.size());
 
-        return transactions.stream().collect(Collectors.groupingBy(
-                t -> {
-                    String categoryName = t.getCategory().getName();
-                    logger.info("Processing category: " + categoryName);
-                    return categoryName;
-                },
-                Collectors.groupingBy(
-                        t -> {
-                            String ageGroup = ageGroupService.calculateAgeGroup(t.getUser().getId());
-                            String gender = t.getUser().getGender();
-                            logger.info("Processing user: " + t.getUser().getId() + ", Age group: " + ageGroup + ", Gender: " + gender);
-                            return ageGroup + "-" + gender;
-                        },
-                        Collectors.summingInt(Transaction::getAmount)
-                )
-        ));
+        // 각 카테고리별로 가장 큰 소비금액을 가진 그룹을 추출
+        return transactions.stream()
+                .collect(Collectors.groupingBy(
+                        t -> t.getCategory().getName(),
+                        Collectors.collectingAndThen(
+                                Collectors.groupingBy(
+                                        t -> ageGroupService.calculateAgeGroup(t.getUser().getId()) + "-" + t.getUser().getGender(),
+                                        Collectors.summingInt(Transaction::getAmount)
+                                ),
+                                ageGenderMap -> ageGenderMap.entrySet().stream()
+                                        .max(Map.Entry.comparingByValue())
+                                        .orElseThrow(() -> new RuntimeException("No transactions found"))
+                        )
+                ));
     }
+
 }
