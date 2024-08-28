@@ -60,11 +60,6 @@ public class TransactionController {
         return transactionService.getTransactionById(id);
     }
 
-    @Operation(summary = "연령대 및 성별별 소비 데이터", description = "카테고리별 연령대 및 성별별 소비 데이터를 반환합니다.")
-    @GetMapping("/consume")
-    public Map<String, Map<String, Integer>> getSpendingByCategoryAndAgeGroup() {
-        return transactionService.getSpendingByCategoryAndAgeGroup();
-    }
     @Operation(summary = "유저 아이디로 거래 내역 조회", description = "특정 유저 아이디를 기반으로 모든 거래 내역을 조회합니다.")
     @GetMapping("/transaction/{userid}")
     public List<Transaction> getTransactionsByUserId(@PathVariable Long userid) {
