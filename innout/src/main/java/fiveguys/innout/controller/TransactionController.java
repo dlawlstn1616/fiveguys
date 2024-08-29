@@ -1,7 +1,10 @@
 package fiveguys.innout.controller;
 
+import fiveguys.innout.dto.AverageSpendingDTO;
 import fiveguys.innout.dto.TransactionDTO;
+import fiveguys.innout.dto.UserSpendingDTO;
 import fiveguys.innout.entity.Transaction;
+import fiveguys.innout.service.AverageSpendingService;
 import fiveguys.innout.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,20 +22,9 @@ public class TransactionController {
     @Autowired
     private TransactionService transactionService;
 
-    @GetMapping("/consume")
-    public List<Map<String, Object>> getTopSpend() {
-        List<Map<String, Object>> result = new ArrayList<>();
+    @Autowired
+    private AverageSpendingService averageSpendingService;
 
-        transactionService.getTopSpend().forEach((category, entry) -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("category", category);
-            map.put("group", entry.getKey());
-            map.put("amount", entry.getValue());
-            result.add(map);
-        });
-
-        return result;
-    }
 
     @Operation(summary = "내역 생성", description = "새로운 내역을 생성합니다.")
     @PostMapping("/add")
@@ -50,11 +42,13 @@ public class TransactionController {
         transactionService.deleteTransaction(id);
     }
     @Operation(summary = "모든 내역 조회", description = "모든 내역을 조회합니다.")
+
     @GetMapping("/all")
     public List<Transaction> getAllTransactions() {
         return transactionService.getAllTransactions();
     }
-    @Operation(summary = "내역 상세 조회", description = "주어진 ID로 특정 낸역을 조회합니다.")
+    @Operation(summary = "내역 상세 조회", description = "주어진 ID로 특정 내역을 조회합니다.")
+
     @GetMapping("/{id}")
     public Transaction getTransactionById(@PathVariable Long id) {
         return transactionService.getTransactionById(id);
@@ -64,6 +58,38 @@ public class TransactionController {
     @GetMapping("/transaction/{userid}")
     public List<Transaction> getTransactionsByUserId(@PathVariable Long userid) {
         return transactionService.getTransactionByUserId(userid);
+    }
+
+    @GetMapping("/consume")
+    public List<Map<String, Object>> getTopSpend() {
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        transactionService.getTopSpend().forEach((category, entry) -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("category", category);
+            map.put("group", entry.getKey());
+            map.put("amount", entry.getValue());
+            result.add(map);
+        });
+
+        return result;
+    }
+
+    @GetMapping("/user-spending/{userId}")
+    public UserSpendingDTO getUserSpending(@PathVariable Long userId) {
+        int totalSpending = transactionService.calculateUserTotalSpending(userId);
+        UserSpendingDTO userSpendingDTO = new UserSpendingDTO(totalSpending);
+        return userSpendingDTO;
+    }
+
+    @GetMapping("/average-spending/{userId}")
+    public AverageSpendingDTO getAverageSpending(@PathVariable Long userId) {
+        return averageSpendingService.calculateAverageSpending(userId);
+    }
+
+    @GetMapping("/category-spending-comparison/{userId}")
+    public Map<String, Map<String, Integer>> getCategorySpendingComparison(@PathVariable Long userId) {
+        return averageSpendingService.getCategorySpendingComparison(userId);
     }
 
 }

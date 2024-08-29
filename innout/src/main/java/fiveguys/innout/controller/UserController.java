@@ -14,6 +14,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/innout")
@@ -46,13 +49,22 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody loginDto loginDto) {
+    public Map<String, Object> login(@RequestBody loginDto loginDto) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return jwtUtil.generateToken(userDetails);
+        User user = userRepository.findByEmail(loginDto.getEmail());
+
+        String token = jwtUtil.generateToken(userDetails, user.getId());  // userId를 포함하여 토큰 생성
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("userId", user.getId());  // 이 부분은 테스트나 디버깅에 사용될 수 있습니다.
+
+        return response;
     }
+
 }
