@@ -120,6 +120,12 @@ public class TransactionService {
                         )
                 ));
     }
+    // 로그인한 사용자의 총 지출을 계산하는 메서드
+    public int calculateUserTotalSpending(Long userId) {
+        return transactionRepository.findAll().stream()
+                .filter(t -> t.getUser().getId().equals(userId))
+                .mapToInt(Transaction::getAmount)
+                .sum();
     public List<Transaction> getTransactionsByEmail(String email) {
         // 이메일을 기반으로 거래 내역 검색
         return transactionRepository.findByUserEmail(email);
