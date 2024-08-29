@@ -50,7 +50,7 @@ public class InnoutRunner implements ApplicationRunner {
                     createCategory(1L, "식비"),
                     createCategory(2L, "교통"),
                     createCategory(3L, "패션"),
-                    createCategory(4L, "문화생활"),
+                    createCategory(4L, "문화"),
                     createCategory(5L, "교육"),
                     createCategory(6L, "기타")
             );
