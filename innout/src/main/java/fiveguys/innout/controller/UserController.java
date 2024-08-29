@@ -59,4 +59,20 @@ public class UserController {
         return jwtUtil.generateToken(userDetails);
     }
 
+    @PutMapping("/{id}/change-password")
+    public String changePassword(@PathVariable Long id, @RequestBody Map<String, String> passwordData) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        String currentPassword = passwordData.get("currentPassword");
+        String newPassword = passwordData.get("newPassword");
+
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        return "Password changed successfully";
+    }
+
 }
