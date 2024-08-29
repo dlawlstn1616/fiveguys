@@ -36,11 +36,11 @@ public class AverageSpendingService {
                 .filter(u -> ageGroupService.calculateAgeGroup(u.getId()).equals(userAgeGroup))
                 .collect(Collectors.toList());
 
-        // 연령대에 속한 사용자의 총 지출을 계산
+        // 연령대에 속한 사용자의 총 지출을 계산 (음수 값을 절대값으로 변환하여 합산)
         int totalSpending = usersInSameAgeGroup.stream()
                 .mapToInt(u -> transactionRepository.findAll().stream()
                         .filter(t -> t.getUser().getId().equals(u.getId()))
-                        .mapToInt(Transaction::getAmount)
+                        .mapToInt(t -> Math.abs(t.getAmount())) // 절대값으로 변경
                         .sum()
                 )
                 .sum();
@@ -62,15 +62,21 @@ public class AverageSpendingService {
 
         String userAgeGroup = ageGroupService.calculateAgeGroup(userId);
 
-        // 사용자의 카테고리별 지출 계산
+        // 사용자의 카테고리별 지출 계산 (음수 값을 절대값으로 변환하여 합산)
         Map<String, Integer> userSpendingByCategory = transactionRepository.findAll().stream()
                 .filter(t -> t.getUser().getId().equals(userId))
-                .collect(Collectors.groupingBy(t -> t.getCategory().getName(), Collectors.summingInt(Transaction::getAmount)));
+                .collect(Collectors.groupingBy(
+                        t -> t.getCategory().getName(),
+                        Collectors.summingInt(t -> Math.abs(t.getAmount())) // 절대값으로 변경
+                ));
 
-        // 동연령대 사용자의 카테고리별 평균 지출 계산
+        // 동연령대 사용자의 카테고리별 평균 지출 계산 (음수 값을 절대값으로 변환하여 합산)
         Map<String, Integer> averageSpendingByCategory = transactionRepository.findAll().stream()
                 .filter(t -> ageGroupService.calculateAgeGroup(t.getUser().getId()).equals(userAgeGroup))
-                .collect(Collectors.groupingBy(t -> t.getCategory().getName(), Collectors.summingInt(Transaction::getAmount)));
+                .collect(Collectors.groupingBy(
+                        t -> t.getCategory().getName(),
+                        Collectors.summingInt(t -> Math.abs(t.getAmount())) // 절대값으로 변경
+                ));
 
         // 사용자와 동연령대 평균 지출 비교 결과 반환
         Map<String, Map<String, Integer>> comparison = new HashMap<>();

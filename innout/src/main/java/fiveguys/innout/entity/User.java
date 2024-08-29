@@ -21,9 +21,9 @@ public class User {
 
     private String password;
 
-    @Temporal(TemporalType.DATE)  // 날짜만 저장하는 경우 사용
+    @Temporal(TemporalType.DATE)
     private Date birthDate;
 
-    private String gender; // 성별 필드 추가
+    private String gender;
 
 }
