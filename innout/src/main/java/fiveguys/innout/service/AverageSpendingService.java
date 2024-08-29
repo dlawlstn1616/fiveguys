@@ -17,76 +17,105 @@ import java.util.stream.Collectors;
 public class AverageSpendingService {
 
     @Autowired
-    private TransactionRepository transactionRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private TransactionRepository transactionRepository;
 
     @Autowired
     private AgeGroupService ageGroupService;
 
     public AverageSpendingDTO calculateAverageSpending(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
         String userAgeGroup = ageGroupService.calculateAgeGroup(userId);
 
-        // 해당 연령대의 모든 사용자를 가져옴
         List<User> usersInSameAgeGroup = userRepository.findAll().stream()
-                .filter(u -> ageGroupService.calculateAgeGroup(u.getId()).equals(userAgeGroup))
-                .toList();
+                .filter(user -> ageGroupService.calculateAgeGroup(user.getId()).equals(userAgeGroup))
+                .collect(Collectors.toList());
 
-        // 연령대에 속한 사용자의 총 지출을 계산 (음수 값만 합산)
-        int totalSpending = usersInSameAgeGroup.stream()
-                .mapToInt(u -> transactionRepository.findByUserId(u.getId()).stream()
-                        .filter(t -> t.getAmount() < 0)  // 음수 금액만 필터링
-                        .mapToInt(Transaction::getAmount) // 금액 합산
-                        .sum()
-                )
+        if (usersInSameAgeGroup.isEmpty()) {
+            throw new RuntimeException("No users found in the age group: " + userAgeGroup);
+        }
+
+        List<Long> userIds = usersInSameAgeGroup.stream()
+                .map(User::getId)
+                .collect(Collectors.toList());
+        List<Transaction> transactions = transactionRepository.findAllByUserIdInAndAmountLessThan(userIds, 0.0);
+
+        double totalSpending = transactions.stream()
+                .mapToDouble(Transaction::getAmount)
                 .sum();
 
-        // 연령대 평균 지출을 계산
-        int averageSpending = totalSpending / usersInSameAgeGroup.size();
+        long uniqueUserCount = transactions.stream()
+                .map(transaction -> transaction.getUser().getId())
+                .distinct()
+                .count();
 
-        AverageSpendingDTO dto = new AverageSpendingDTO();
-        dto.setUserAgeGroup(userAgeGroup);
-        dto.setAverageSpending(averageSpending);
+        double averageSpending = uniqueUserCount > 0 ? totalSpending / uniqueUserCount : 0.0;
 
-        return dto;
+        return new AverageSpendingDTO(userAgeGroup, averageSpending, uniqueUserCount);
     }
 
-    // 카테고리별 사용자와 동연령대 평균 지출 비교
-    public Map<String, Map<String, Integer>> getCategorySpendingComparison(Long userId) {
+    public Map<String, Map<String, Double>> getCategorySpendingComparison(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Step 1: Calculate the user's age group
         String userAgeGroup = ageGroupService.calculateAgeGroup(userId);
 
-        // 사용자의 카테고리별 지출 계산 (음수 값만 합산)
+        // Step 2: Calculate the user's spending by category
         Map<String, Integer> userSpendingByCategory = transactionRepository.findByUserId(userId).stream()
-                .filter(t -> t.getAmount() < 0)  // 음수 금액만 필터링
+                .filter(t -> t.getAmount() < 0)  // Filter only negative amounts
                 .collect(Collectors.groupingBy(
                         t -> t.getCategory().getName(),
-                        Collectors.summingInt(Transaction::getAmount) // 금액 합산
+                        Collectors.summingInt(Transaction::getAmount) // Sum the amounts
                 ));
 
-        // 동연령대 사용자의 카테고리별 평균 지출 계산 (음수 값만 합산)
-        Map<String, Integer> averageSpendingByCategory = transactionRepository.findAll().stream()
-                .filter(t -> ageGroupService.calculateAgeGroup(t.getUser().getId()).equals(userAgeGroup))
-                .filter(t -> t.getAmount() < 0)  // 음수 금액만 필터링
+        // Step 3: Find all users in the same age group
+        List<User> usersInSameAgeGroup = userRepository.findAll().stream()
+                .filter(u -> ageGroupService.calculateAgeGroup(u.getId()).equals(userAgeGroup))
+                .collect(Collectors.toList());
+
+        long totalUsersInAgeGroup = usersInSameAgeGroup.size();
+
+        // Step 4: Calculate total spending by category for users in the same age group
+        Map<String, Integer> totalSpendingByCategory = transactionRepository.findAll().stream()
+                .filter(t -> usersInSameAgeGroup.contains(t.getUser())) // Filter transactions by users in the same age group
+                .filter(t -> t.getAmount() < 0)  // Filter only negative amounts
                 .collect(Collectors.groupingBy(
                         t -> t.getCategory().getName(),
-                        Collectors.summingInt(Transaction::getAmount) // 금액 합산
+                        Collectors.summingInt(Transaction::getAmount) // Sum the amounts
                 ));
 
-        // 사용자와 동연령대 평균 지출 비교 결과 반환
-        Map<String, Map<String, Integer>> comparison = new HashMap<>();
-        for (String category : userSpendingByCategory.keySet()) {
-            Map<String, Integer> spending = new HashMap<>();
-            spending.put("userSpending", userSpendingByCategory.get(category));
-            spending.put("averageSpending", averageSpendingByCategory.getOrDefault(category, 0));
-            comparison.put(category, spending);
+        // Step 5: Calculate average spending by category for users in the same age group
+        Map<String, Double> averageSpendingByCategory = new HashMap<>();
+        for (Map.Entry<String, Integer> entry : totalSpendingByCategory.entrySet()) {
+            String category = entry.getKey();
+            Integer totalSpending = entry.getValue();
+            double averageSpending = totalUsersInAgeGroup > 0 ? (double) totalSpending / totalUsersInAgeGroup : 0.0;
+            averageSpendingByCategory.put(category, averageSpending);
         }
+
+        // Step 6: Prepare the comparison result
+        Map<String, Map<String, Double>> comparison = new HashMap<>();
+        for (String category : userSpendingByCategory.keySet()) {
+            Map<String, Double> spendingComparison = new HashMap<>();
+            spendingComparison.put("userSpending", (double) userSpendingByCategory.get(category));
+            spendingComparison.put("averageSpending", averageSpendingByCategory.getOrDefault(category, 0.0));
+            comparison.put(category, spendingComparison);
+        }
+
+        // Include categories where the user has no spending but the age group has
+        for (String category : averageSpendingByCategory.keySet()) {
+            if (!comparison.containsKey(category)) {
+                Map<String, Double> spendingComparison = new HashMap<>();
+                spendingComparison.put("userSpending", 0.0);  // User didn't spend in this category
+                spendingComparison.put("averageSpending", averageSpendingByCategory.get(category));
+                comparison.put(category, spendingComparison);
+            }
+        }
+
         return comparison;
     }
+
+
 }

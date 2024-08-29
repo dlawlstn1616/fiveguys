@@ -10,4 +10,7 @@ import java.util.List;
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
     List<Transaction> findByUserId(Long userid);
+
+    List<Transaction> findAllByUserIdInAndAmountLessThan(List<Long> userIds, Double amount);
+
 }

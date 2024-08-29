@@ -88,8 +88,7 @@ public class TransactionController {
     }
 
     @GetMapping("/category-spending-comparison/{userId}")
-    public Map<String, Map<String, Integer>> getCategorySpendingComparison(@PathVariable Long userId) {
+    public Map<String, Map<String, Double>> getCategorySpendingComparison(@PathVariable Long userId) {
         return averageSpendingService.getCategorySpendingComparison(userId);
     }
-
 }
