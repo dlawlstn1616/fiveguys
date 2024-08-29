@@ -43,11 +43,13 @@ public class TransactionController {
         transactionService.deleteTransaction(id);
     }
     @Operation(summary = "모든 내역 조회", description = "모든 내역을 조회합니다.")
+
     @GetMapping("/all")
     public List<Transaction> getAllTransactions() {
         return transactionService.getAllTransactions();
     }
-    @Operation(summary = "내역 상세 조회", description = "주어진 ID로 특정 낸역을 조회합니다.")
+    @Operation(summary = "내역 상세 조회", description = "주어진 ID로 특정 내역을 조회합니다.")
+
     @GetMapping("/{id}")
     public Transaction getTransactionById(@PathVariable Long id) {
         return transactionService.getTransactionById(id);
@@ -79,6 +81,11 @@ public class TransactionController {
     @GetMapping("/average-spending/{userId}")
     public AverageSpendingDTO getAverageSpending(@PathVariable Long userId) {
         return averageSpendingService.calculateAverageSpending(userId);
+    }
+
+    @GetMapping("/category-spending-comparison/{userId}")
+    public Map<String, Map<String, Integer>> getCategorySpendingComparison(@PathVariable Long userId) {
+        return averageSpendingService.getCategorySpendingComparison(userId);
     }
 
 }

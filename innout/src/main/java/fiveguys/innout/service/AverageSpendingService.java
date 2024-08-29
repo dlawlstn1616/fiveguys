@@ -8,7 +8,9 @@ import fiveguys.innout.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,5 +53,33 @@ public class AverageSpendingService {
         dto.setAverageSpending(averageSpending);
 
         return dto;
+    }
+
+    // 카테고리별 사용자와 동연령대 평균 지출 비교
+    public Map<String, Map<String, Integer>> getCategorySpendingComparison(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String userAgeGroup = ageGroupService.calculateAgeGroup(userId);
+
+        // 사용자의 카테고리별 지출 계산
+        Map<String, Integer> userSpendingByCategory = transactionRepository.findAll().stream()
+                .filter(t -> t.getUser().getId().equals(userId))
+                .collect(Collectors.groupingBy(t -> t.getCategory().getName(), Collectors.summingInt(Transaction::getAmount)));
+
+        // 동연령대 사용자의 카테고리별 평균 지출 계산
+        Map<String, Integer> averageSpendingByCategory = transactionRepository.findAll().stream()
+                .filter(t -> ageGroupService.calculateAgeGroup(t.getUser().getId()).equals(userAgeGroup))
+                .collect(Collectors.groupingBy(t -> t.getCategory().getName(), Collectors.summingInt(Transaction::getAmount)));
+
+        // 사용자와 동연령대 평균 지출 비교 결과 반환
+        Map<String, Map<String, Integer>> comparison = new HashMap<>();
+        for (String category : userSpendingByCategory.keySet()) {
+            Map<String, Integer> spending = new HashMap<>();
+            spending.put("userSpending", userSpendingByCategory.get(category));
+            spending.put("averageSpending", averageSpendingByCategory.getOrDefault(category, 0));
+            comparison.put(category, spending);
+        }
+        return comparison;
     }
 }
