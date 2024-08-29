@@ -49,22 +49,30 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody loginDto loginDto) {
+    public String login(@RequestBody loginDto loginDto) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        User user = userRepository.findByEmail(loginDto.getEmail());
+        return jwtUtil.generateToken(userDetails);
+    }
 
-        String token = jwtUtil.generateToken(userDetails, user.getId());  // userId를 포함하여 토큰 생성
+    @PutMapping("/{id}/change-password")
+    public String changePassword(@PathVariable Long id, @RequestBody Map<String, String> passwordData) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        String currentPassword = passwordData.get("currentPassword");
+        String newPassword = passwordData.get("newPassword");
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", token);
-        response.put("userId", user.getId());  // 이 부분은 테스트나 디버깅에 사용될 수 있습니다.
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
 
-        return response;
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        return "Password changed successfully";
     }
 
 }

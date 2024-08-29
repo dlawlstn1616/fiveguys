@@ -30,21 +30,6 @@ public class TransactionService {
     @Autowired
     private AgeGroupService ageGroupService;
 
-//    public Transaction createTransaction(TransactionDTO transactionDTO) {
-//        Transaction transaction = new Transaction();
-//        transaction.setDate(transactionDTO.getDate());
-//        transaction.setAmount(transactionDTO.getAmount());
-//
-//        Optional<Category> category = categoryRepository.findById(transactionDTO.getCategoryId());
-//        Optional<User> user = userRepository.findById(transactionDTO.getUserId());
-//
-//        category.ifPresent(transaction::setCategory);
-//        user.ifPresent(transaction::setUser);
-//
-//        transaction.setDescription(transactionDTO.getDescription());
-//
-//        return transactionRepository.save(transaction);
-//    }
     public Transaction createTransaction(TransactionDTO transactionDTO) {
         Transaction transaction = new Transaction();
         transaction.setDate(transactionDTO.getDate());
@@ -126,10 +111,14 @@ public class TransactionService {
                 .filter(t -> t.getUser().getId().equals(userId))
                 .mapToInt(Transaction::getAmount)
                 .sum();
+    
+    }
     public List<Transaction> getTransactionsByEmail(String email) {
         // 이메일을 기반으로 거래 내역 검색
         return transactionRepository.findByUserEmail(email);
     }
+
+
 
     public List<Transaction> getTransactionByUserId(Long userid) {
         return transactionRepository.findByUserId(userid);
