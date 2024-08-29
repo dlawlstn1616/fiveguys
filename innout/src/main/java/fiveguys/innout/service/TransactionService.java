@@ -90,21 +90,34 @@ public class TransactionService {
         List<Transaction> transactions = transactionRepository.findAll();
         logger.info("Total transactions fetched: " + transactions.size());
 
-        // 각 카테고리별로 가장 큰 소비금액을 가진 그룹을 추출
-        return transactions.stream()
+        // 각 카테고리별로 amount가 음수인 값들의 합이 가장 큰 그룹을 추출
+        Map<String, Map.Entry<String, Integer>> topSpendsByCategory = transactions.stream()
+                .filter(t -> t.getAmount() < 0) // amount가 음수인 거래만 필터링
                 .collect(Collectors.groupingBy(
                         t -> t.getCategory().getName(),
                         Collectors.collectingAndThen(
                                 Collectors.groupingBy(
                                         t -> ageGroupService.calculateAgeGroup(t.getUser().getId()) + "-" + t.getUser().getGender(),
-                                        Collectors.summingInt(Transaction::getAmount)
+                                        Collectors.summingInt(Transaction::getAmount) // 음수 값만 합산
                                 ),
                                 ageGenderMap -> ageGenderMap.entrySet().stream()
                                         .max(Map.Entry.comparingByValue())
-                                        .orElseThrow(() -> new RuntimeException("No transactions found"))
+                                        .orElse(null) // 예외를 던지는 대신 null을 반환하거나 다른 처리 가능
                         )
                 ));
+
+        // 로깅 추가: 결과 출력
+        topSpendsByCategory.forEach((category, entry) -> {
+            if (entry != null) {
+                logger.info("Category: " + category + ", Top Group: " + entry.getKey() + ", Spending: " + entry.getValue());
+            } else {
+                logger.warn("Category: " + category + " has no negative spending groups.");
+            }
+        });
+
+        return topSpendsByCategory;
     }
+
     // 로그인한 사용자의 총 지출을 계산하는 메서드
     public int calculateUserTotalSpending(Long userId) {
         return transactionRepository.findAll().stream()
