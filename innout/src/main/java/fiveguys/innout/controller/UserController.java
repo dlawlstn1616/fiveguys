@@ -5,9 +5,11 @@ import fiveguys.innout.dto.loginDto;
 import fiveguys.innout.entity.User;
 import fiveguys.innout.repository.UserRepository;
 import fiveguys.innout.security.JwtUtil;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.support.SimpleTriggerContext;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -63,6 +65,22 @@ public class UserController {
         return jwtUtil.generateToken(userDetails);
     }
 
+    @GetMapping("/{id}/profile")
+    public ResponseEntity<?> getProfile(@PathVariable Long id) {
+        Optional<User> userOptional = userRepository.findById(id);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            Map<String, Object> profileData = new HashMap<>();
+            profileData.put("name", user.getName());
+            profileData.put("birthDate", user.getBirthDate());
+            profileData.put("gender", user.getGender());
+            return ResponseEntity.ok(profileData);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+    }
+
+
     @PutMapping("/{id}/change-password")
     public String changePassword(@PathVariable Long id, @RequestBody Map<String, String> passwordData) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
@@ -99,6 +117,9 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
     }
+
+
+
 
 
 
