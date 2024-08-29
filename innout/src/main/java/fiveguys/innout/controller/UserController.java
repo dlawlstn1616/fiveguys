@@ -6,6 +6,8 @@ import fiveguys.innout.entity.User;
 import fiveguys.innout.repository.UserRepository;
 import fiveguys.innout.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -16,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
@@ -74,5 +78,28 @@ public class UserController {
 
         return "Password changed successfully";
     }
+
+    @PostMapping("/password-reset")
+    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String username = request.get("username");
+
+        Optional<User> userOptional = userRepository.findByEmailAndName(email, username);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            // 임시 비밀번호 생성
+            String tempPassword = UUID.randomUUID().toString().substring(0, 8); // 임의의 8자리 비밀번호 생성
+            user.setPassword(passwordEncoder.encode(tempPassword)); // 비밀번호 암호화 후 저장
+            userRepository.save(user);
+
+            return ResponseEntity.ok(tempPassword); // 임시 비밀번호를 반환
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+    }
+
+
 
 }
