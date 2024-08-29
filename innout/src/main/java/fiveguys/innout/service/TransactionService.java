@@ -120,5 +120,12 @@ public class TransactionService {
                         )
                 ));
     }
+    // 로그인한 사용자의 총 지출을 계산하는 메서드
+    public int calculateUserTotalSpending(Long userId) {
+        return transactionRepository.findAll().stream()
+                .filter(t -> t.getUser().getId().equals(userId))
+                .mapToInt(Transaction::getAmount)
+                .sum();
+    }
 
 }
