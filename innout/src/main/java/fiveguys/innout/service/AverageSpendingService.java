@@ -34,13 +34,13 @@ public class AverageSpendingService {
         // 해당 연령대의 모든 사용자를 가져옴
         List<User> usersInSameAgeGroup = userRepository.findAll().stream()
                 .filter(u -> ageGroupService.calculateAgeGroup(u.getId()).equals(userAgeGroup))
-                .collect(Collectors.toList());
+                .toList();
 
-        // 연령대에 속한 사용자의 총 지출을 계산 (음수 값을 절대값으로 변환하여 합산)
+        // 연령대에 속한 사용자의 총 지출을 계산 (음수 값만 합산)
         int totalSpending = usersInSameAgeGroup.stream()
-                .mapToInt(u -> transactionRepository.findAll().stream()
-                        .filter(t -> t.getUser().getId().equals(u.getId()))
-                        .mapToInt(t -> Math.abs(t.getAmount())) // 절대값으로 변경
+                .mapToInt(u -> transactionRepository.findByUserId(u.getId()).stream()
+                        .filter(t -> t.getAmount() < 0)  // 음수 금액만 필터링
+                        .mapToInt(Transaction::getAmount) // 금액 합산
                         .sum()
                 )
                 .sum();
@@ -62,20 +62,21 @@ public class AverageSpendingService {
 
         String userAgeGroup = ageGroupService.calculateAgeGroup(userId);
 
-        // 사용자의 카테고리별 지출 계산 (음수 값을 절대값으로 변환하여 합산)
-        Map<String, Integer> userSpendingByCategory = transactionRepository.findAll().stream()
-                .filter(t -> t.getUser().getId().equals(userId))
+        // 사용자의 카테고리별 지출 계산 (음수 값만 합산)
+        Map<String, Integer> userSpendingByCategory = transactionRepository.findByUserId(userId).stream()
+                .filter(t -> t.getAmount() < 0)  // 음수 금액만 필터링
                 .collect(Collectors.groupingBy(
                         t -> t.getCategory().getName(),
-                        Collectors.summingInt(t -> Math.abs(t.getAmount())) // 절대값으로 변경
+                        Collectors.summingInt(Transaction::getAmount) // 금액 합산
                 ));
 
-        // 동연령대 사용자의 카테고리별 평균 지출 계산 (음수 값을 절대값으로 변환하여 합산)
+        // 동연령대 사용자의 카테고리별 평균 지출 계산 (음수 값만 합산)
         Map<String, Integer> averageSpendingByCategory = transactionRepository.findAll().stream()
                 .filter(t -> ageGroupService.calculateAgeGroup(t.getUser().getId()).equals(userAgeGroup))
+                .filter(t -> t.getAmount() < 0)  // 음수 금액만 필터링
                 .collect(Collectors.groupingBy(
                         t -> t.getCategory().getName(),
-                        Collectors.summingInt(t -> Math.abs(t.getAmount())) // 절대값으로 변경
+                        Collectors.summingInt(Transaction::getAmount) // 금액 합산
                 ));
 
         // 사용자와 동연령대 평균 지출 비교 결과 반환

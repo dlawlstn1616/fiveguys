@@ -118,21 +118,14 @@ public class TransactionService {
         return topSpendsByCategory;
     }
 
-    // 로그인한 사용자의 총 지출을 계산하는 메서드
+
     public int calculateUserTotalSpending(Long userId) {
-        return transactionRepository.findAll().stream()
-                .filter(t -> t.getUser().getId().equals(userId))
-                .mapToInt(Transaction::getAmount)
-                .sum();
-    
+        // 특정 사용자의 모든 트랜잭션을 가져와 음수 금액(지출)만을 합산
+        return transactionRepository.findByUserId(userId).stream()
+                .filter(t -> t.getAmount() < 0)  // 음수 금액 필터링 (지출만 포함)
+                .mapToInt(Transaction::getAmount)  // 금액 추출
+                .sum();  // 합산하여 반환
     }
-    public List<Transaction> getTransactionsByEmail(String email) {
-        // 이메일을 기반으로 거래 내역 검색
-        return transactionRepository.findByUserEmail(email);
-    }
-
-
-
     public List<Transaction> getTransactionByUserId(Long userid) {
         return transactionRepository.findByUserId(userid);
     }
