@@ -45,7 +45,7 @@ jobs:
           password: ${{secrets.DOCKER_PASSWORD}}
 
 
-#name: Java CI with Maven
+#name: Java CI
 #
 #on:
 #  push:
