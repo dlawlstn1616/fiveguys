@@ -53,3 +53,7 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+jar {
+	archiveFileName = 'fiveguys.jar' // JAR 파일의 이름을 지정합니다.
+}
