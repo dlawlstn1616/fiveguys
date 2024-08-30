@@ -25,18 +25,18 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: |
-          cd fiveguys/innout
+          cd innout
           chmod +x ./gradlew
 
       - name: Build with Gradle
         run: |
-          cd fiveguys/innout
+          cd innout
           ./gradlew clean build -x test
         # Ensure Gradle generates JAR files here
 
       - name: List build/libs contents
         run: |
-          cd fiveguys/innout
+          cd innout
           ls -la build/libs
         # Check if the JAR file is created
 
