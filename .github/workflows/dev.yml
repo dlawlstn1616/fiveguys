@@ -29,7 +29,7 @@ jobs:
 
       - name: Build with Gradle
         run: |
-          ./gradlew build
+          gradlew build
 
       - name: Build & push Docker image
         uses: mr-smithers-excellent/docker-build-push@v6
