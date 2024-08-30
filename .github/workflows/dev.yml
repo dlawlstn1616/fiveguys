@@ -25,12 +25,13 @@ jobs:
           cache: gradle
 
       - name: Grant execute permission for gradlew
-        run:
+        run: |
           cd innout
-          chmod +x gradlew # 실행 권한 부여
+          chmod +x gradlew
 
       - name: Build with Gradle
         run: |
+          cd innout
           gradlew build
 
       - name: Build & push Docker image
@@ -39,9 +40,10 @@ jobs:
           image: ${{secrets.DOCKER_USERNAME}}/$DOCKER_IMAGE
           tags: $DOCKER_TAG
           registry: docker.io
-          dockerfile: innout/Dockerfile # Dockerfile 경로
+          dockerfile: innout/Dockerfile
           username: ${{secrets.DOCKER_USERNAME}}
           password: ${{secrets.DOCKER_PASSWORD}}
+
 
 #name: Java CI with Maven
 #
