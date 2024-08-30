@@ -29,6 +29,7 @@ jobs:
 
       - name: Build with Gradle
         run: |
+          cd innout
           gradlew build
 
       - name: Build & push Docker image
