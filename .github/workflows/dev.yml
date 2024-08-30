@@ -1,4 +1,4 @@
-name: Java CI with Maven
+name: Java CI with Gradle
 
 on:
   push:
@@ -12,21 +12,24 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew # 실행 권한 부여
+
       - name: Build with Gradle
         run: |
-          cd innout
-          gradlew build
+          ./gradlew build
 
       - name: Build & push Docker image
         uses: mr-smithers-excellent/docker-build-push@v6
@@ -34,6 +37,46 @@ jobs:
           image: ${{secrets.DOCKER_USERNAME}}/$DOCKER_IMAGE
           tags: $DOCKER_TAG
           registry: docker.io
-          dockerfile: Dockerfile
+          dockerfile: innout/Dockerfile # Dockerfile 경로 확인
           username: ${{secrets.DOCKER_USERNAME}}
           password: ${{secrets.DOCKER_PASSWORD}}
+
+#name: Java CI with Maven
+#
+#on:
+#  push:
+#    branches: [ "dev"]
+#  pull_request:
+#    branches: [ "dev" ]
+#
+#env:
+#  DOCKER_IMAGE: fiveguys
+#  DOCKER_TAG: 1.2
+#
+#jobs:
+#  build:
+#
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Set up JDK 17
+#        uses: actions/setup-java@v3
+#        with:
+#          java-version: '17'
+#          distribution: 'temurin'
+#          cache: gradle
+#      - name: Build with Gradle
+#        run: |
+#          cd innout
+#          gradlew build
+#
+#      - name: Build & push Docker image
+#        uses: mr-smithers-excellent/docker-build-push@v6
+#        with:
+#          image: ${{secrets.DOCKER_USERNAME}}/$DOCKER_IMAGE
+#          tags: $DOCKER_TAG
+#          registry: docker.io
+#          dockerfile: Dockerfile
+#          username: ${{secrets.DOCKER_USERNAME}}
+#          password: ${{secrets.DOCKER_PASSWORD}}
