@@ -25,18 +25,18 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: |
-          cd innout
+          cd fiveguys/innout
           chmod +x ./gradlew
 
       - name: Build with Gradle
         run: |
-          cd innout
+          cd fiveguys/innout
           ./gradlew clean build -x test
         # Ensure Gradle generates JAR files here
 
       - name: List build/libs contents
         run: |
-          cd innout
+          cd fiveguys/innout
           ls -la build/libs
         # Check if the JAR file is created
 
@@ -46,9 +46,10 @@ jobs:
           image: ${{secrets.DOCKER_USERNAME}}/$DOCKER_IMAGE
           tags: $DOCKER_TAG
           registry: docker.io
-          dockerfile: innout/Dockerfile
+          dockerfile: fiveguys/innout/Dockerfile
           username: ${{secrets.DOCKER_USERNAME}}
           password: ${{secrets.DOCKER_PASSWORD}}
+
 
 
 
