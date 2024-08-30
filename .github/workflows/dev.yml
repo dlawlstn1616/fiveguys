@@ -46,7 +46,7 @@ jobs:
           image: ${{secrets.DOCKER_USERNAME}}/$DOCKER_IMAGE
           tags: $DOCKER_TAG
           registry: docker.io
-          dockerfile: fiveguys/innout/Dockerfile
+          dockerfile: innout/Dockerfile
           username: ${{secrets.DOCKER_USERNAME}}
           password: ${{secrets.DOCKER_PASSWORD}}
 
